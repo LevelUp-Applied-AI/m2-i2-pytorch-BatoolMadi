@@ -7,4 +7,4 @@ venv/
 dist/
 build/
 .pytest_cache/
-predictions.csv
+.vscode/

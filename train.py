@@ -22,12 +22,13 @@ class HousingModel(nn.Module):
     Architecture: Linear(5, 32) -> ReLU -> Linear(32, 1)
     """
 
-    def __init__(self):
+    def __init__(self, hidden_size=32):
         """Define the model layers."""
         super().__init__()
-        self.layer1 = nn.Linear(5, 32)   # 5 input features → 32 hidden units
+
+        self.layer1 = nn.Linear(5, hidden_size)   # 5 input features → 32 hidden units
         self.relu   = nn.ReLU()           # activation function
-        self.layer2 = nn.Linear(32, 1)    # 32 hidden → 1 output (price prediction)
+        self.layer2 = nn.Linear(hidden_size, 1)    # 32 hidden → 1 output (price prediction)
 
     def forward(self, x):
         """Define the forward pass.
@@ -46,6 +47,34 @@ class HousingModel(nn.Module):
 
 
 # ─── Main Training Script ─────────────────────────────────────────────────────
+
+def load_data():
+    df = pd.read_csv('data/housing.csv')
+
+    feature_cols = [
+        'area_sqm',
+        'bedrooms',
+        'floor',
+        'age_years',
+        'distance_to_center_km'
+    ]
+
+    X = df[feature_cols]
+    y = df[['price_jod']]
+
+    # standardization
+    X_scaled = (X - X.mean()) / X.std()
+
+    X_tensor = torch.tensor(X_scaled.values, dtype=torch.float32)
+    # scale target too
+    y_mean = y.mean()
+    y_std = y.std()
+
+    y_scaled = (y - y_mean) / y_std
+    y_tensor = torch.tensor(y_scaled.values, dtype=torch.float32)
+
+    #Neural networks train better when input AND target distributions are normalized.
+    return X_tensor, y_tensor, y_mean.values[0], y_std.values[0]
 
 def main():
     """Load data, train HousingModel, and save predictions."""
